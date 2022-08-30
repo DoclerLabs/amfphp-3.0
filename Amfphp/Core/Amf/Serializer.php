@@ -161,7 +161,7 @@ class Amfphp_Core_Amf_Serializer implements Amfphp_Core_Common_ISerializer {
      * writeLong takes an int, float or double and converts it to a 4 byte binary string and
      * adds it to the output buffer
      *
-     * @param long $l A long to convert to a 4 byte binary string
+     * @param int $l A long to convert to a 4 byte binary string
      */
     protected function writeLong($l) {
         $this->outBuffer .= pack('N', $l); // use pack with the N flag
@@ -245,7 +245,7 @@ class Amfphp_Core_Amf_Serializer implements Amfphp_Core_Common_ISerializer {
     protected function writeXML(Amfphp_Core_Amf_Types_Xml $d) {
         if (!$this->handleReference($d->data, $this->Amf0StoredObjects)) {
             $this->writeByte(0x0F);
-            $this->writeLongUTF(preg_replace('/\>(\n|\r|\r\n| |\t)*\</', '><', trim($d->data)));
+            $this->writeLongUTF(preg_replace('/>(\n|\r|\r\n| |\t)*</', '><', trim($d->data)));
         }
     }
 
@@ -298,7 +298,7 @@ class Amfphp_Core_Amf_Serializer implements Amfphp_Core_Common_ISerializer {
      * or a mix of keys.  Then it either writes the array code (0x0A) or the
      * object code (0x03) and then the associated data.
      *
-     * @param array $d The php array
+     * @param array|object $d The php array
      */
     protected function writeArrayOrObject($d) {
         // referencing is disabled in arrays
@@ -312,7 +312,6 @@ class Amfphp_Core_Amf_Serializer implements Amfphp_Core_Common_ISerializer {
 
         $numeric = array(); // holder to store the numeric keys
         $string = array(); // holder to store the string keys
-        $len = count($d); // get the total number of entries for the array
         $largestKey = -1;
         foreach ($d as $key => $data) { // loop over each element
             if (is_int($key) && ($key >= 0)) { // make sure the keys are numeric
@@ -539,8 +538,6 @@ class Amfphp_Core_Amf_Serializer implements Amfphp_Core_Common_ISerializer {
 
     /**
      * Write undefined (Amf3).
-     *
-     * @return nothing
      */
     protected function writeAmf3Undefined() {
         $this->outBuffer .= "\0";
@@ -548,8 +545,6 @@ class Amfphp_Core_Amf_Serializer implements Amfphp_Core_Common_ISerializer {
 
     /**
      * Write NULL (Amf3).
-     *
-     * @return nothing
      */
     protected function writeAmf3Null() {
         $this->outBuffer .= "\1";
@@ -559,8 +554,6 @@ class Amfphp_Core_Amf_Serializer implements Amfphp_Core_Common_ISerializer {
      * Write a boolean (Amf3).
      *
      * @param bool $d the boolean to serialise
-     *
-     * @return nothing
      */
     protected function writeAmf3Bool($d) {
         $this->outBuffer .= $d ? "\3" : "\2";
@@ -572,8 +565,6 @@ class Amfphp_Core_Amf_Serializer implements Amfphp_Core_Common_ISerializer {
      * @see getAmf3Int()
      *
      * @param int $d the integer to serialise
-     *
-     * @return nothing
      */
     protected function writeAmf3Int($d) {
         $this->outBuffer .= $this->getAmf3Int($d);
@@ -590,8 +581,7 @@ class Amfphp_Core_Amf_Serializer implements Amfphp_Core_Common_ISerializer {
      *
      * @param string $d the string to send
      *
-     * @return The reference index inside the lookup table is returned. In case of an empty
-     * string which is sent in a special way, NULL is returned.
+     * @return void
      */
     protected function writeAmf3String($d) {
 
@@ -608,14 +598,14 @@ class Amfphp_Core_Amf_Serializer implements Amfphp_Core_Common_ISerializer {
     }
 
     /**
-     *  handles writing an anoynous object (stdClass)
+     *  handles writing an anonymous object (stdClass)
      *  can also be a reference
      * Also creates a bogus traits entry, as even an anonymous object has traits. In this way a reference to a class trait will have the right id.
      * @todo it would seem that to create only one traits entry for an anonymous object would be the way to go. this 
      * however messes things up in both Flash and Charles Proxy. For testing call discovery service using AMF. investigate.
      *
-     * @param stdClass $d The php object to write
-     * @param doReference Boolean This is used by writeAmf3Array, where the reference has already been taken care of, 
+     * @param object|array $d The php object to write
+     * @param bool $doReference Boolean This is used by writeAmf3Array, where the reference has already been taken care of,
      * so there this method is called with false
      */
     protected function writeAmf3AnonymousObject($d, $doReference = true) {
@@ -659,7 +649,6 @@ class Amfphp_Core_Amf_Serializer implements Amfphp_Core_Common_ISerializer {
 
         $numeric = array(); // holder to store the numeric keys >= 0
         $string = array(); // holder to store the string keys; actually, non-integer or integer < 0 are stored
-        $len = count($d); // get the total number of entries for the array
         $largestKey = -1;
         foreach ($d as $key => $data) { // loop over each element
             if (is_int($key) && ($key >= 0)) { // make sure the keys are numeric
@@ -761,7 +750,7 @@ class Amfphp_Core_Amf_Serializer implements Amfphp_Core_Common_ISerializer {
      * @param Amfphp_Core_Amf_Types_Xml $d
      */
     protected function writeAmf3Xml(Amfphp_Core_Amf_Types_Xml $d) {
-        $d = preg_replace('/\>(\n|\r|\r\n| |\t)*\</', '><', trim($d->data));
+        $d = preg_replace('/>(\n|\r|\r\n| |\t)*</', '><', trim($d->data));
         $this->writeByte(0x0B);
         $this->writeAmf3String($d);
     }
@@ -771,7 +760,7 @@ class Amfphp_Core_Amf_Serializer implements Amfphp_Core_Common_ISerializer {
      * @param Amfphp_Core_Amf_Types_XmlDocument $d
      */
     protected function writeAmf3XmlDocument(Amfphp_Core_Amf_Types_XmlDocument $d) {
-        $d = preg_replace('/\>(\n|\r|\r\n| |\t)*\</', '><', trim($d->data));
+        $d = preg_replace('/>(\n|\r|\r\n| |\t)*</', '><', trim($d->data));
         $this->writeByte(0x07);
         $this->writeAmf3String($d);
     }
