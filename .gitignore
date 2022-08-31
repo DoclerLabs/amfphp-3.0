@@ -1,7 +1,10 @@
 # PHP
 ###################
+test-reports
 vendor
 .phpunit.result.cache
+
+Amfphp/Plugins/AmfphpMonitor/log.txt.php
 
 #netbeans project
 ###################

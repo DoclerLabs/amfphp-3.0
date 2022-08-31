@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+		cacheResult="false"
+		colors="true"
+		bootstrap="Tests/bootstrap.php"
+>
+	<logging>
+		<junit outputFile="test-reports/phpunit.xml"/>
+	</logging>
+
+	<coverage>
+		<include>
+			<directory suffix=".php">Amfphp</directory>
+		</include>
+
+		<report>
+			<text outputFile="php://stdout" showOnlySummary="true"/>
+			<html outputDirectory="test-reports/html"/>
+			<clover outputFile="test-reports/coverage.xml"/>
+		</report>
+	</coverage>
+
+	<testsuites>
+		<testsuite name="DoclerLabs - AMFPHP library - Unit Test Suite">
+			<directory>./Tests/</directory>
+		</testsuite>
+	</testsuites>
+</phpunit>
